@@ -13,8 +13,8 @@ Go to `http://localhost:1234`
 ### Todo
 - [x] Export individual selected sprites as PNG
 - [x] Preview panel for selected sprite
-- [] Zoom in/out
+- [ ] Zoom in/out
 
 ### Ideas
-- [] Right-click to export
-- [] Shift to select multiple sprites and export all
+- [ ] Right-click to export
+- [ ] Shift to select multiple sprites and export all
