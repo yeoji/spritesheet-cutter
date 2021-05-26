@@ -205,6 +205,53 @@
 			outline: none;
 		}
 	}
+// Preview Panel
+	.preview-panel {
+		display: grid;
+		grid-template-columns: 1fr 1fr 2fr;
+		background-color: #B9B9B9;
+		color: #000;
+		padding-left: 50px;
+
+		& .panel-title {
+			font-size: large;
+		}
+
+		.intro & {
+			height: 0;
+			padding-top: 0;
+			padding-bottom: 0;
+			overflow: hidden;
+		}
+
+		& [data-inline-edit] {
+			position: relative;
+			display: inline-block;
+			background-color: white;
+			width: 150px;
+			border: 1px solid black;
+
+			&::before {
+				// border-bottom: 1px dotted #fff;
+				position: absolute;
+				left: 0;
+				bottom: -3px;
+				right: 0;
+				content: "";
+			}
+		}
+
+		& input[type='text'] {
+			position: absolute;
+			border: 1px solid #ccc;
+			background: #fff;
+			color: #333;
+			font: normal 12px/1 monospace;
+			padding: 3px;
+			outline: none;
+		}
+	}
+
 // Toolbar
 	.toolbar {
 		overflow: hidden;

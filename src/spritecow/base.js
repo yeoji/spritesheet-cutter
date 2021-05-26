@@ -6,7 +6,9 @@ import ImgInput from './ImgInput';
 import {Toolbar, ToolbarGroup} from './Toolbar';
 import pageLayout from './pageLayout';
 
-(function(spriteCow) {
+import PreviewPanel from '../cutter/PreviewPanel';
+
+(function() {
 	// init
 	(function() {
 		function colourBytesToCss(color) {
@@ -22,7 +24,7 @@ import pageLayout from './pageLayout';
 		var spriteCanvas      = new SpriteCanvas();
 		var spriteCanvasView  = new SpriteCanvasView( spriteCanvas, $canvasContainer );
 		var imgInput          = new ImgInput( $canvasContainer, $canvasContainer, $tutorialLink.attr('href') );
-		// var cssOutput         = new spriteCow.CssOutput( $codeContainer );
+		var previewPanel      = new PreviewPanel( spriteCanvas, $codeContainer );
 		var toolbarTop        = new Toolbar('.toolbar-container');
 		var toolbarBottom     = new Toolbar('.toolbar-bottom-container');
 		
@@ -50,19 +52,19 @@ import pageLayout from './pageLayout';
 		imgInput.bind('load', function(img) {
 			spriteCanvas.setImg(img);
 			
-			// cssOutput.imgWidth = spriteCanvas.canvas.width;
-			// cssOutput.imgHeight = spriteCanvas.canvas.height;
-			// cssOutput.scaledWidth = Math.round( cssOutput.imgWidth / 2 );
-			// cssOutput.scaledHeight = Math.round( cssOutput.imgHeight / 2 );
+			previewPanel.imgWidth = spriteCanvas.canvas.width;
+			previewPanel.imgHeight = spriteCanvas.canvas.height;
+			previewPanel.scaledWidth = Math.round( previewPanel.imgWidth / 2 );
+			previewPanel.scaledHeight = Math.round( previewPanel.imgHeight / 2 );
 
 			spriteCanvasView.setTool('select-sprite');
-			// cssOutput.backgroundFileName = imgInput.fileName;
+			previewPanel.backgroundFileName = imgInput.fileName;
 			pageLayout.toAppView();
 		});
 		
 		spriteCanvasView.bind('rectChange', function(rect) {
-			// cssOutput.rect = rect;
-			// cssOutput.update();
+			previewPanel.rect = rect;
+			previewPanel.update();
 
 			if (rect.width === spriteCanvas.canvas.width && rect.height === spriteCanvas.canvas.height) {
 				// if the rect is the same size as the whole canvas,
@@ -126,4 +128,4 @@ import pageLayout from './pageLayout';
 			event.preventDefault();
 		});
 	})();
-})({});
+})();
