@@ -6,9 +6,9 @@
 		@include radial-gradient((
 			center center,
 			circle cover,
-			#0091d5 0%,
-			#0091d5 15%,
-			#004a86 100%
+			grey 0%,
+			grey 15%,
+			black 100%
 		));
 	}
 	body {

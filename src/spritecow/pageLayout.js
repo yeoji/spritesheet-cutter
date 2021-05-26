@@ -5,7 +5,6 @@ export default (function() {
 		$header = $('.container > header'),
 		$canvasCell = $('.canvas-cell'),
 		$canvasInner = $('.canvas-inner'),
-		$cowLogo = $('.cow-logo'),
 		$footerUl = $('.main-footer ul'),
 		$footerP = $('.main-footer p'),
 		$cssOutput,
@@ -54,12 +53,6 @@ export default (function() {
 				duration: 500,
 				easing: 'easeInOutQuad',
 				targets: [
-					[$cowLogo, {
-						transform: $cowLogo.vendorCss('transform'),
-						opacity: $cowLogo.css('opacity'),
-						height: $cowLogo.css('height'),
-						margin: 0
-					}],
 					[$container, { width: '100%' }],
 					[$header, { height: $header.height() }],
 					[$cssOutput, {
