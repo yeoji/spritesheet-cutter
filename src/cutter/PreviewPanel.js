@@ -10,20 +10,16 @@ class PreviewPanel {
         this.$preview = this.createPreviewComponent().appendTo($container);
         this.$settings = this.createSettingsComponent().appendTo($container);
 
+        this.$previewCanvas = this.$preview.find('canvas')[0];
+        this.$hiddenExportingCanvas = $(`<canvas style="display:none"/>`)[0];
+        this.$exportButton = this.$settings.find('#exportButton');
+
         this.$spriteCanvas = spriteCanvas.canvas;
-        this.backgroundFileName = '';
         this.fileName = 'sprite.png';
         this.rect = new Rect(0, 0, 0, 0);
-        this.imgWidth = 0;
-        this.imgHeight = 0;
-        this.scaledWidth = 0;
-        this.scaledHeight = 0;
-        this.useTabs = true;
-        this.useBgUrl = true;
-        this.percentPos = false;
-        this.bgSize = false;
-        this.selector = '.sprite';
         this._addEditEvents();
+
+        this.$exportButton.on('click', this.handleExport.bind(this));
     }
 
     createPreviewComponent() {
@@ -46,19 +42,40 @@ class PreviewPanel {
 
     update() {
         var rect = this.rect;
+        const previewCanvas = this.$previewCanvas;
+        const hiddenCanvas = this.$hiddenExportingCanvas;
 
         this.$settings.find('#fileName').text(this.fileName);
 
-        const selectedSprite = this.$spriteCanvas.getContext('2d').getImageData(rect.x, rect.y, rect.width, rect.height);
-
-        const previewCanvas = this.$preview.find('canvas')[0];
+        // the preview canvas has a fixed size and the sprite is resized to fit the preview panel
         const previewCanvasContext = previewCanvas.getContext('2d');
         previewCanvasContext.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
         previewCanvasContext.drawImage(
             this.$spriteCanvas, rect.x, rect.y, rect.width, rect.height,
             0, 0, previewCanvas.width, previewCanvas.height
         );
+
+        // we need a hidden canvas that will always match the current selected sprite's height/width so when exporting it is the correct size
+        const hiddenCanvasContext = hiddenCanvas.getContext('2d');
+        hiddenCanvasContext.clearRect(0, 0, hiddenCanvas.width, hiddenCanvas.height);
+        hiddenCanvas.width = rect.width;
+        hiddenCanvas.height = rect.height;
+        hiddenCanvasContext.drawImage(
+            this.$spriteCanvas, rect.x, rect.y, rect.width, rect.height,
+            0, 0, hiddenCanvas.width, hiddenCanvas.height
+        );
     };
+
+    handleExport() {
+        const image = this.$hiddenExportingCanvas.toDataURL("image/png");
+        var link = document.createElement('a');
+        link.download = this.fileName;
+        link.href = image;
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
 
     _addEditEvents() {
         var previewPanel = this;

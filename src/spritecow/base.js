@@ -40,10 +40,6 @@ import PreviewPanel from '../cutter/PreviewPanel';
 
 		toolbarTop.$container.addClass('top');
 
-		toolbarBottom.
-			addItem('bg-size', 'Scale for retina displays', {noLabel: true}).
-			addItem('percent', 'Percentage positioning', {noLabel: true});
-
 		toolbarBottom.$container.addClass('bottom');
 
 		pageLayout.init();
@@ -52,13 +48,7 @@ import PreviewPanel from '../cutter/PreviewPanel';
 		imgInput.bind('load', function(img) {
 			spriteCanvas.setImg(img);
 			
-			previewPanel.imgWidth = spriteCanvas.canvas.width;
-			previewPanel.imgHeight = spriteCanvas.canvas.height;
-			previewPanel.scaledWidth = Math.round( previewPanel.imgWidth / 2 );
-			previewPanel.scaledHeight = Math.round( previewPanel.imgHeight / 2 );
-
 			spriteCanvasView.setTool('select-sprite');
-			previewPanel.backgroundFileName = imgInput.fileName;
 			pageLayout.toAppView();
 		});
 		
