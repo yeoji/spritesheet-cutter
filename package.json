@@ -4,7 +4,8 @@
   "main": "index.js",
   "author": "yeoji",
   "scripts": {
-    "dev": "parcel public/index.html"
+    "dev": "parcel public/index.html",
+    "build": "parcel build --public-url '.' public/index.html"
   },
   "devDependencies": {
     "parcel-bundler": "^1.12.5",

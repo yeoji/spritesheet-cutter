@@ -18,3 +18,4 @@ Go to `http://localhost:1234`
 ### Ideas
 - [ ] Right-click to export
 - [ ] Shift to select multiple sprites and export all
+- [ ] Adjustable rectangle after selection
