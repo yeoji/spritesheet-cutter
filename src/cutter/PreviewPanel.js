@@ -8,6 +8,7 @@ class PreviewPanel {
         var $container = $('<div class="preview-panel"></div>').appendTo($appendTo);
         this._$container = $container;
         this.$preview = this.createPreviewComponent().appendTo($container);
+        this.$properties = this.createPropertiesComponent().appendTo($container);
         this.$settings = this.createSettingsComponent().appendTo($container);
 
         this.$previewCanvas = this.$preview.find('canvas')[0];
@@ -30,6 +31,18 @@ class PreviewPanel {
         return container;
     }
 
+    createPropertiesComponent() {
+        const container = $('<div></div>');
+
+        $('<div class="panel-title">Properties</div>').appendTo(container);
+        $('<div>Top X: <input id="topX" disabled/></div><br/>').appendTo(container);
+        $('<div>Top Y: <input id="topY" disabled/></div><br/>').appendTo(container);
+        $('<div>Width: <input id="width" disabled/></div><br/>').appendTo(container);
+        $('<div>Height: <input id="height" disabled/></div><br/>').appendTo(container);
+        
+        return container;
+    }
+
     createSettingsComponent() {
         const container = $('<div></div>');
 
@@ -46,6 +59,10 @@ class PreviewPanel {
         const hiddenCanvas = this.$hiddenExportingCanvas;
 
         this.$settings.find('#fileName').text(this.fileName);
+        this.$properties.find('#topX').val(rect.x);
+        this.$properties.find('#topY').val(rect.y);
+        this.$properties.find('#width').val(rect.width);
+        this.$properties.find('#height').val(rect.height);
 
         // the preview canvas has a fixed size and the sprite is resized to fit the preview panel
         const previewCanvasContext = previewCanvas.getContext('2d');

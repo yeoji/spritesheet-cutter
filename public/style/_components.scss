@@ -205,11 +205,14 @@
 			outline: none;
 		}
 	}
+	.code-container {
+		background-color: #B9B9B9;
+	}
 // Preview Panel
 	.preview-panel {
 		display: grid;
-		grid-template-columns: 1fr 1fr 2fr;
-		background-color: #B9B9B9;
+		grid-template-columns: 1fr 1fr 1fr;
+		width: 50%;
 		color: #000;
 		padding-left: 50px;
 
