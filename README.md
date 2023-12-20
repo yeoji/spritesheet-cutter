@@ -5,6 +5,7 @@ This project uses [Sprite Cow](https://github.com/jakearchibald/sprite-cow) as a
 ### Development
 
 ```
+yarn install
 yarn dev
 ```
 
