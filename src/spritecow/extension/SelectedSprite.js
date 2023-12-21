@@ -1,5 +1,3 @@
-import Rect from '../Rect';
-
 class SelectedSprite {
     constructor(rect, highlight) {
         this.rect = rect;

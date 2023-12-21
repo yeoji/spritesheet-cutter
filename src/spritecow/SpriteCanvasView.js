@@ -268,18 +268,27 @@ SpriteCanvasViewProto._setCurrentRect = function(rect) {
 };
 
 SpriteCanvasViewProto._handleSelectedSprite = function(clickedRect, spriteRect) {
-	const highlight = new Highlight(this._$container);
-	highlight.moveTo(clickedRect); // move to clicked area so the animation starts from click position
-
-	const selected = new SelectedSprite(spriteRect, highlight);
 	if(isKeyDown(SHIFT_KEY)) {
-		this._selectedSprites.push(selected);
+		const alreadySelectedSpriteIndex = this._selectedSprites.findIndex(sprite => JSON.stringify(sprite.rect) == JSON.stringify(spriteRect));
+		if(alreadySelectedSpriteIndex > -1) {
+			this._selectedSprites[alreadySelectedSpriteIndex].unselect();
+			this._selectedSprites.splice(alreadySelectedSpriteIndex, 1);
+		} else {
+			this._selectedSprites.push(this._selectSprite(clickedRect, spriteRect));
+		}
 	} else {
 		this._unselectAllSprites();
-		this._selectedSprites = [selected];
+		this._selectedSprites = [this._selectSprite(clickedRect, spriteRect)];
 	}
 
 	this._setCurrentRect(spriteRect);
+}
+
+SpriteCanvasViewProto._selectSprite = function(clickedRect, spriteRect) {
+	const highlight = new Highlight(this._$container);
+	highlight.moveTo(clickedRect); // move to clicked area so the animation starts from click position
+
+	return new SelectedSprite(spriteRect, highlight);
 }
 
 SpriteCanvasViewProto._unselectAllSprites = function() {
