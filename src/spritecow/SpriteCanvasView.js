@@ -263,10 +263,6 @@ class SpriteCanvasView {
 
 var SpriteCanvasViewProto = SpriteCanvasView.prototype = new MicroEvent;
 
-SpriteCanvasViewProto._setCurrentRect = function(rect) {
-	this.trigger('rectChange', rect);
-};
-
 SpriteCanvasViewProto._handleSelectedSprite = function(clickedRect, spriteRect) {
 	if(isKeyDown(SHIFT_KEY)) {
 		const alreadySelectedSpriteIndex = this._selectedSprites.findIndex(sprite => JSON.stringify(sprite.rect) == JSON.stringify(spriteRect));
@@ -281,7 +277,7 @@ SpriteCanvasViewProto._handleSelectedSprite = function(clickedRect, spriteRect) 
 		this._selectedSprites = [this._selectSprite(clickedRect, spriteRect)];
 	}
 
-	this._setCurrentRect(spriteRect);
+	this.trigger('selectedSpritesChange', this._selectedSprites);
 }
 
 SpriteCanvasViewProto._selectSprite = function(clickedRect, spriteRect) {

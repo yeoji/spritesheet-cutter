@@ -52,16 +52,22 @@ import PreviewPanel from '../cutter/PreviewPanel';
 			pageLayout.toAppView();
 		});
 		
-		spriteCanvasView.bind('rectChange', function(rect) {
-			previewPanel.rect = rect;
+		spriteCanvasView.bind('selectedSpritesChange', function(selectedSprites) {
+			if(selectedSprites.length === 0) {
+				return;
+			}
+
+			previewPanel.selectedSprites = selectedSprites;
 			previewPanel.update();
 
-			if (rect.width === spriteCanvas.canvas.width && rect.height === spriteCanvas.canvas.height) {
-				// if the rect is the same size as the whole canvas,
-				// it's probably because the background is set wrong
-				// let's be kind...
-				toolbarTop.feedback( 'Incorrect background colour set?', true );
-			}
+			selectedSprites.forEach(({rect}) => {
+				if (rect.width === spriteCanvas.canvas.width && rect.height === spriteCanvas.canvas.height) {
+					// if the rect is the same size as the whole canvas,
+					// it's probably because the background is set wrong
+					// let's be kind...
+					toolbarTop.feedback( 'Incorrect background colour set?', true );
+				}
+			});
 		});
 		
 		spriteCanvasView.bind('bgColorHover', function(color) {
