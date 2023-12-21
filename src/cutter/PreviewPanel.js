@@ -1,6 +1,6 @@
 import $ from 'jquery';
+import JSZip from 'jszip';
 
-import Rect from '../spritecow/Rect';
 import InlineEdit from '../spritecow/InlineEdit';
 
 class PreviewPanel {
@@ -16,8 +16,8 @@ class PreviewPanel {
         this.$exportButton = this.$settings.find('#exportButton');
 
         this.$spriteCanvas = spriteCanvas.canvas;
-        this.fileName = 'sprite.png';
-        this.rect = new Rect(0, 0, 0, 0);
+        this.fileName = 'sprite';
+        this.selectedSprites = [];
         this._addEditEvents();
 
         this.$exportButton.on('click', this.handleExport.bind(this));
@@ -48,17 +48,18 @@ class PreviewPanel {
 
         $('<div class="panel-title">Settings</div>').appendTo(container);
         $('<div>Name: <span id="fileName" data-inline-edit="file-name"/></div><br/>').appendTo(container);
+        $('<div><span id="selectedSpritesCount">0</span> sprite(s) selected!</div>').appendTo(container);
         $('<div><input id="exportButton" type="button" value="Export" title="Export the selected sprite"></div>').appendTo(container);
         
         return container;
     }
 
     update() {
-        var rect = this.rect;
+        var rect = this.selectedSprites[this.selectedSprites.length - 1].rect;
         const previewCanvas = this.$previewCanvas;
-        const hiddenCanvas = this.$hiddenExportingCanvas;
 
         this.$settings.find('#fileName').text(this.fileName);
+        this.$settings.find('#selectedSpritesCount').text(this.selectedSprites.length);
         this.$properties.find('#topX').val(rect.x);
         this.$properties.find('#topY').val(rect.y);
         this.$properties.find('#width').val(rect.width);
@@ -71,9 +72,35 @@ class PreviewPanel {
             this.$spriteCanvas, rect.x, rect.y, rect.width, rect.height,
             0, 0, previewCanvas.width, previewCanvas.height
         );
+    };
 
-        // we need a hidden canvas that will always match the current selected sprite's height/width so when exporting it is the correct size
+    handleExport() {
+        if(this.selectedSprites.length > 1) {
+            this.createZipExport().then(base64 => {
+                const dataUrl = "data:application/zip;base64," + base64;
+                this.downloadExport(dataUrl, '.zip');
+            });
+        } else {
+            const image = this.createImageData(this.selectedSprites[0]);
+            this.downloadExport(image, '.png');
+        }
+    }
+
+    downloadExport(dataUrl, ext) {
+        var link = document.createElement('a');
+        link.download = this.fileName + ext;
+        link.href = dataUrl;
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    createImageData(sprite) {
+        const rect = sprite.rect;
+        const hiddenCanvas = this.$hiddenExportingCanvas;
         const hiddenCanvasContext = hiddenCanvas.getContext('2d');
+
         hiddenCanvasContext.clearRect(0, 0, hiddenCanvas.width, hiddenCanvas.height);
         hiddenCanvas.width = rect.width;
         hiddenCanvas.height = rect.height;
@@ -81,17 +108,19 @@ class PreviewPanel {
             this.$spriteCanvas, rect.x, rect.y, rect.width, rect.height,
             0, 0, hiddenCanvas.width, hiddenCanvas.height
         );
-    };
 
-    handleExport() {
-        const image = this.$hiddenExportingCanvas.toDataURL("image/png");
-        var link = document.createElement('a');
-        link.download = this.fileName;
-        link.href = image;
+        return hiddenCanvas.toDataURL("image/png");
+    }
 
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+    createZipExport() {
+        var zip = new JSZip();
+
+        this.selectedSprites.forEach((sprite, i) => {
+            const base64Image = this.createImageData(sprite).split(';base64,')[1];
+            zip.file(`${i}.png`, base64Image, {base64: true});
+        });
+
+        return zip.generateAsync({type:"base64"});
     }
 
     _addEditEvents() {

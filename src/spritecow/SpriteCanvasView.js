@@ -2,6 +2,8 @@ import $ from 'jquery';
 
 import MicroEvent from './MicroEvent';
 import Rect from './Rect';
+import { SHIFT_KEY, isKeyDown } from '../cutter/KeyboardEvents';
+import SelectedSprite from './extension/SelectedSprite';
 
 var Highlight = (function() {
 	function Highlight($appendTo) {
@@ -30,7 +32,7 @@ var Highlight = (function() {
 					easing: 'easeOutQuad'
 				});
 			}
-			else {					
+			else {		
 				$container.vendorCss(destination);				
 			}
 		}
@@ -61,6 +63,10 @@ var Highlight = (function() {
 			$container.css('display', 'none');
 		}
 	};
+
+	HighlightProto.remove = function() {
+		this._$container.remove();
+	}
 	
 	HighlightProto.setHighVisOnDark = function(highVis) {
 		this._$container[highVis ? 'addClass' : 'removeClass']('high-vis');
@@ -187,6 +193,7 @@ var SelectArea = (function() {
 				if (!isDragging) { return; }
 				isDragging = false;
 				selectArea.trigger('select', rect);
+				selectArea._highlight.hide();
 			}
 		]);
 		
@@ -216,7 +223,8 @@ class SpriteCanvasView {
 			// this cannot be $appendToElm, as browsers pick up clicks on scrollbars, some don't pick up mouseup http://code.google.com/p/chromium/issues/detail?id=14204#makechanges
 			highlight = new Highlight($container),
 			selectArea = new SelectArea($container, $canvas, highlight),
-			selectColor = new SelectColor($canvas, $canvas);
+			selectColor = new SelectColor($canvas, $canvas),
+			selectedSprites = [];
 
 		this._$container = $container;
 		this._$bgElm = $appendToElm;
@@ -224,17 +232,21 @@ class SpriteCanvasView {
 		this._highlight = highlight;
 		this._selectArea = selectArea;
 		this._selectColor = selectColor;
+		this._selectedSprites = selectedSprites;
 
 		$container.appendTo($appendToElm);
 
-		selectArea.bind('select', function (rect) {
+		selectArea.bind('select', function (clickedRect) {
+			const rect = Object.assign({}, clickedRect);
+
 			var spriteRect = spriteCanvas.trimBg(rect);
 			if (spriteRect.width && spriteRect.height) { // false if clicked on bg pixel
 				spriteRect = spriteCanvas.expandToSpriteBoundry(rect);
-				spriteCanvasView._setCurrentRect(spriteRect);
+				
+				spriteCanvasView._handleSelectedSprite(clickedRect, spriteRect);
 			}
 			else {
-				highlight.hide(true);
+				spriteCanvasView._unselectAllSprites();
 			}
 		});
 
@@ -251,16 +263,38 @@ class SpriteCanvasView {
 
 var SpriteCanvasViewProto = SpriteCanvasView.prototype = new MicroEvent;
 
-SpriteCanvasViewProto._setCurrentRect = function(rect) {
-	this._highlight.moveTo(rect, true);
-	this.trigger('rectChange', rect);
-};
+SpriteCanvasViewProto._handleSelectedSprite = function(clickedRect, spriteRect) {
+	if(isKeyDown(SHIFT_KEY)) {
+		const alreadySelectedSpriteIndex = this._selectedSprites.findIndex(sprite => JSON.stringify(sprite.rect) == JSON.stringify(spriteRect));
+		if(alreadySelectedSpriteIndex > -1) {
+			this._selectedSprites[alreadySelectedSpriteIndex].unselect();
+			this._selectedSprites.splice(alreadySelectedSpriteIndex, 1);
+		} else {
+			this._selectedSprites.push(this._selectSprite(clickedRect, spriteRect));
+		}
+	} else {
+		this._unselectAllSprites();
+		this._selectedSprites = [this._selectSprite(clickedRect, spriteRect)];
+	}
+
+	this.trigger('selectedSpritesChange', this._selectedSprites);
+}
+
+SpriteCanvasViewProto._selectSprite = function(clickedRect, spriteRect) {
+	const highlight = new Highlight(this._$container);
+	highlight.moveTo(clickedRect); // move to clicked area so the animation starts from click position
+
+	return new SelectedSprite(spriteRect, highlight);
+}
+
+SpriteCanvasViewProto._unselectAllSprites = function() {
+	this._selectedSprites.forEach(sprite => sprite.unselect());
+}
 
 SpriteCanvasViewProto.setTool = function(mode) {
 	var selectArea = this._selectArea,
 		selectColor = this._selectColor;
 	
-	this._highlight.hide();
 	selectArea.deactivate();
 	selectColor.deactivate();
 	
