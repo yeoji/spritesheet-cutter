@@ -32,3 +32,4 @@ Click on a sprite, hold shift to select another sprite, and another, and another
 - [x] Shift to select multiple sprites and export all
 - [ ] Adjustable rectangle after selection
 - [ ] Grid-based slicing
+- [ ] Auto select and export all
