@@ -141,19 +141,20 @@ var SelectArea = (function() {
 		this._$eventArea = $eventArea;
 		this._highlight = highlight;
 		this._listeners = [];
+
+		this.createListeners();
 	}
 	
 	var SelectAreaProto = SelectArea.prototype = new MicroEvent;
-	
-	SelectAreaProto.activate = function() {
+
+	SelectAreaProto.createListeners = function() {
 		var selectArea = this,
 			rect = new Rect(0, 0, 0, 0),
 			startX, startY,
 			startPositionX, startPositionY,
 			isDragging,
 			$document = $(document);
-		
-		
+
 		selectArea._listeners.push([
 			selectArea._$eventArea, 'mousedown', function(event) {
 				if (event.button !== 0) { return; }
@@ -196,6 +197,10 @@ var SelectArea = (function() {
 				selectArea._highlight.hide();
 			}
 		]);
+	}
+	
+	SelectAreaProto.activate = function() {
+		var selectArea = this;
 		
 		selectArea._listeners.forEach(function(set) {
 			set[0].bind.apply( set[0], set.slice(1) );
@@ -244,8 +249,7 @@ class SpriteCanvasView {
 				spriteRect = spriteCanvas.expandToSpriteBoundry(rect);
 				
 				spriteCanvasView._handleSelectedSprite(clickedRect, spriteRect);
-			}
-			else {
+			} else {
 				spriteCanvasView._unselectAllSprites();
 			}
 		});
@@ -289,6 +293,7 @@ SpriteCanvasViewProto._selectSprite = function(clickedRect, spriteRect) {
 
 SpriteCanvasViewProto._unselectAllSprites = function() {
 	this._selectedSprites.forEach(sprite => sprite.unselect());
+	this._selectedSprites = [];
 }
 
 SpriteCanvasViewProto.setTool = function(mode) {
