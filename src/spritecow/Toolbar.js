@@ -1,8 +1,9 @@
 import $ from 'jquery';
 import MicroEvent from './MicroEvent';
 
-class Toolbar {
+class Toolbar extends MicroEvent {
 	constructor($appendToElm) {
+		super();
 		var toolbar = this,
 			$container = $('' +
 				'<div class="toolbar">' +
@@ -53,7 +54,7 @@ class Toolbar {
 	}
 }
 
-var ToolbarProto = Toolbar.prototype = new MicroEvent();
+var ToolbarProto = Toolbar.prototype;
 
 ToolbarProto.addItem = function(toolName, text, opts) {
 	if (toolName instanceof ToolbarGroup) {

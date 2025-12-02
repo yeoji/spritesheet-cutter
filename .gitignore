@@ -10,3 +10,8 @@ dist
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+*.exe
+*.tar.gz
+release_text.txt
+release/*

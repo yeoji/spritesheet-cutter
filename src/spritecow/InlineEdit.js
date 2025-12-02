@@ -2,8 +2,9 @@ import $ from 'jquery';
 
 import MicroEvent from './MicroEvent';
 
-class InlineEdit {
+class InlineEdit extends MicroEvent {
 	constructor($toWatch) {
+		super();
 		var $input = $('<input type="text"/>').appendTo($toWatch);
 		var inlineEdit = this;
 
@@ -37,7 +38,7 @@ class InlineEdit {
 	}
 }
 
-var InlineEditProto = InlineEdit.prototype = new MicroEvent();
+var InlineEditProto = InlineEdit.prototype;
 
 InlineEditProto.edit = function( $elm ) {
 	$elm = $($elm);

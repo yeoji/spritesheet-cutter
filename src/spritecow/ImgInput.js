@@ -2,8 +2,9 @@ import $ from 'jquery';
 
 import MicroEvent from './MicroEvent';
 
-class ImgInput {
+class ImgInput extends MicroEvent {
 	constructor($container, $dropZone, tutorialUrl) {
+		super();
 		var imgInput = this,
 			$fileInput = $('<input type="file" accept="image/*" class="upload-input">').appendTo(document.body),
 			$buttons = $('<div class="start-buttons"/>').appendTo($container),
@@ -31,7 +32,7 @@ class ImgInput {
 	}
 }
 
-var ImgInputProto = ImgInput.prototype = new MicroEvent;
+var ImgInputProto = ImgInput.prototype;
 
 ImgInputProto._openFileAsImg = function(file) {
 	var imgInput = this,
