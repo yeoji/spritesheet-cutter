@@ -1,8 +1,9 @@
 import $ from 'jquery';
 import MicroEvent from './MicroEvent';
 
-class Toolbar {
+class Toolbar extends MicroEvent {
 	constructor($appendToElm) {
+		super();
 		var toolbar = this,
 			$container = $('' +
 				'<div class="toolbar">' +
@@ -48,12 +49,18 @@ class Toolbar {
 		if (opts.active) {
 			$button.addClass('active');
 		}
+		if (opts.textOnly) {
+			$button.addClass('text-only');
+		}
+		if (opts.title) {
+			$button.attr('title', opts.title);
+		}
 
 		return $button;
 	}
 }
 
-var ToolbarProto = Toolbar.prototype = new MicroEvent();
+var ToolbarProto = Toolbar.prototype;
 
 ToolbarProto.addItem = function(toolName, text, opts) {
 	if (toolName instanceof ToolbarGroup) {
@@ -63,6 +70,11 @@ ToolbarProto.addItem = function(toolName, text, opts) {
 		Toolbar.createButton(toolName, text, opts).insertBefore( this._$feedback );
 	}
 
+	return this;
+};
+
+ToolbarProto.addElement = function($elm) {
+	$elm.insertBefore( this._$feedback );
 	return this;
 };
 

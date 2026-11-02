@@ -113,6 +113,30 @@
 			}
 		}
 
+		& .resize-handle {
+			position: absolute;
+			width: 8px;
+			height: 8px;
+			margin: -4px 0 0 -4px;
+			background: #fff;
+			border: 1px solid rgba(0, 114, 255, 0.9);
+			box-sizing: border-box;
+			// the highlight ignores the mouse, the handles don't
+			pointer-events: auto;
+
+			&.nw, &.n, &.ne { top: -1px; }
+			&.w, &.e { top: 50%; }
+			&.sw, &.s, &.se { top: calc(100% + 1px); }
+			&.nw, &.w, &.sw { left: -1px; }
+			&.n, &.s { left: 50%; }
+			&.ne, &.e, &.se { left: calc(100% + 1px); }
+
+			&.nw, &.se { cursor: nwse-resize; }
+			&.ne, &.sw { cursor: nesw-resize; }
+			&.n, &.s { cursor: ns-resize; }
+			&.w, &.e { cursor: ew-resize; }
+		}
+
 		.intro & {
 			opacity: 0;
 		}
@@ -207,6 +231,7 @@
 	}
 	.code-container {
 		background-color: #B9B9B9;
+		display: flex;
 	}
 // Preview Panel
 	.preview-panel {
@@ -252,6 +277,34 @@
 			font: normal 12px/1 monospace;
 			padding: 3px;
 			outline: none;
+		}
+
+		& input[type='number'] {
+			width: 6em;
+		}
+	}
+// Slice Panel
+	.slice-panel {
+		color: #000;
+		padding-left: 50px;
+
+		& .panel-title {
+			font-size: large;
+		}
+
+		& .cell-size {
+			margin-bottom: 1em;
+		}
+
+		& input[type='number'] {
+			width: 6em;
+		}
+
+		.intro & {
+			height: 0;
+			padding-top: 0;
+			padding-bottom: 0;
+			overflow: hidden;
 		}
 	}
 
@@ -309,6 +362,17 @@
 				padding: 4px 0;
 				text-indent: -5000px;
 			}
+			&.text-only {
+				padding-left: 10px;
+
+				&::before {
+					display: none;
+				}
+			}
+			&.zoom-reset {
+				min-width: 3em;
+				text-align: center;
+			}
 			&.select-sprite::before {
 				background-position: -4px -2px;
 			}
@@ -336,6 +400,15 @@
 			padding: 5px;
 			color: #555;
 			opacity: 0;
+		}
+		& .tolerance {
+			float: left;
+			margin: 0 5px 5px 0;
+			padding: 3px 0;
+
+			& input {
+				width: 4em;
+			}
 		}
 	}
 
