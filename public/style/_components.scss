@@ -231,6 +231,7 @@
 	}
 	.code-container {
 		background-color: #B9B9B9;
+		display: flex;
 	}
 // Preview Panel
 	.preview-panel {
@@ -280,6 +281,30 @@
 
 		& input[type='number'] {
 			width: 6em;
+		}
+	}
+// Slice Panel
+	.slice-panel {
+		color: #000;
+		padding-left: 50px;
+
+		& .panel-title {
+			font-size: large;
+		}
+
+		& .cell-size {
+			margin-bottom: 1em;
+		}
+
+		& input[type='number'] {
+			width: 6em;
+		}
+
+		.intro & {
+			height: 0;
+			padding-top: 0;
+			padding-bottom: 0;
+			overflow: hidden;
 		}
 	}
 

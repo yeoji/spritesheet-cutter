@@ -31,6 +31,9 @@ Click on a sprite, hold shift to select another sprite, and another, and another
 #### Right-click to Export
 Right-click a sprite to select it and export it straight away (hold shift to add it to the selection first). Right-clicking inside the current selection exports the whole selection.
 
+#### Grid-based Slicing
+In the Slice panel, set how many columns and rows the sheet has (the resulting cell size is shown below them) and click Slice Grid. Every cell with a sprite in it gets selected, empty cells are skipped. Tick "Trim cells to their sprite" to cut the background around each sprite instead of keeping the full cell size.
+
 #### Adjusting a Selection
 The last selected sprite gets resize handles: drag them to move its edges. You can also type its position and size in the Properties panel.
 
@@ -43,5 +46,5 @@ The last selected sprite gets resize handles: drag them to move its edges. You c
 - [x] Right-click to export
 - [x] Shift to select multiple sprites and export all
 - [x] Adjustable rectangle after selection
-- [ ] Grid-based slicing
+- [x] Grid-based slicing
 - [ ] Auto select and export all

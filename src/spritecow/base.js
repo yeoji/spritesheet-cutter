@@ -7,6 +7,7 @@ import {Toolbar, ToolbarGroup} from './Toolbar';
 import pageLayout from './pageLayout';
 
 import PreviewPanel from '../cutter/PreviewPanel';
+import SlicePanel from '../cutter/SlicePanel';
 
 (function() {
 	// init
@@ -42,6 +43,7 @@ import PreviewPanel from '../cutter/PreviewPanel';
 		var spriteCanvasView  = new SpriteCanvasView( spriteCanvas, $canvasContainer );
 		var imgInput          = new ImgInput( $canvasContainer, $canvasContainer, $tutorialLink.attr('href') );
 		var previewPanel      = new PreviewPanel( spriteCanvas, $codeContainer );
+		var slicePanel        = new SlicePanel( spriteCanvas, $codeContainer );
 		var toolbarTop        = new Toolbar('.toolbar-container');
 		var toolbarBottom     = new Toolbar('.toolbar-bottom-container');
 		var $tolerance        = $('<label class="tolerance" title="How different a pixel can be from the background and still count as background">Tolerance <input type="number" min="0" max="255"></label>');
@@ -78,6 +80,7 @@ import PreviewPanel from '../cutter/PreviewPanel';
 			spriteCanvas.setImg(img);
 			// the canvas size changed, scale it to the current zoom
 			spriteCanvasView.setZoom( spriteCanvasView.getZoom() );
+			slicePanel.update();
 
 			spriteCanvasView.setTool('select-sprite');
 			pageLayout.toAppView();
@@ -122,6 +125,13 @@ import PreviewPanel from '../cutter/PreviewPanel';
 
 		previewPanel.bind('rectEdit', function(rect) {
 			spriteCanvasView.setActiveSpriteRect(rect);
+		});
+
+		slicePanel.bind('gridSlice', function(grid) {
+			var rects = spriteCanvas.getGridRects(grid.columns, grid.rows, grid.trim);
+
+			spriteCanvasView.selectRects(rects);
+			toolbarTop.feedback( rects.length ? rects.length + ' sprite(s) selected' : 'No sprites found', !rects.length );
 		});
 
 		spriteCanvasView.bind('exportRequest', function(selectedSprites) {

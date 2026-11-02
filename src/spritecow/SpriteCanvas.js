@@ -1,4 +1,5 @@
 import MicroEvent from './MicroEvent';
+import Rect from './Rect';
 
 export default (function() {
 	function pixelsEquivalent(pixels1, offset1, pixels2, offset2, tolerance) {
@@ -46,8 +47,70 @@ export default (function() {
 		canvas.height = img.height;
 		
 		context.drawImage(img, 0, 0);
-		
+
 		this._img = img;
+		this._pixels = null;
+	};
+
+	// pixels of the whole image, read once per image
+	SpriteCanvasProto._getPixels = function() {
+		if (!this._pixels) {
+			this._pixels = this._context.getImageData(0, 0, this.canvas.width, this.canvas.height).data;
+		}
+		return this._pixels;
+	};
+
+	SpriteCanvasProto._isBgAt = function(pixels, x, y) {
+		return pixelsEquivalent(this._bgData, 0, pixels, (y * this.canvas.width + x) * 4, this._tolerance);
+	};
+
+	// shrinks the rect to the sprite pixels inside it, its width & height are 0 if there are none
+	SpriteCanvasProto.trimRectToContent = function(rect) {
+		var pixels = this._getPixels(),
+			left = Infinity,
+			top = Infinity,
+			right = -1,
+			bottom = -1;
+
+		for (var y = rect.y; y < rect.y + rect.height; y++) {
+			for (var x = rect.x; x < rect.x + rect.width; x++) {
+				if ( !this._isBgAt(pixels, x, y) ) {
+					left = Math.min(left, x);
+					top = Math.min(top, y);
+					right = Math.max(right, x);
+					bottom = Math.max(bottom, y);
+				}
+			}
+		}
+
+		if (right < 0) {
+			return new Rect(rect.x, rect.y, 0, 0);
+		}
+		return new Rect(left, top, right - left + 1, bottom - top + 1);
+	};
+
+	// splits the image into columns x rows cells, skipping the ones with only bg pixels
+	SpriteCanvasProto.getGridRects = function(columns, rows, trim) {
+		var canvas = this.canvas,
+			rects = [];
+
+		for (var row = 0; row < rows; row++) {
+			for (var column = 0; column < columns; column++) {
+				var x = Math.round(column * canvas.width / columns),
+					y = Math.round(row * canvas.height / rows),
+					cell = new Rect(
+						x, y,
+						Math.round((column + 1) * canvas.width / columns) - x,
+						Math.round((row + 1) * canvas.height / rows) - y
+					),
+					content = this.trimRectToContent(cell);
+
+				if (content.width && content.height) {
+					rects.push(trim ? content : cell);
+				}
+			}
+		}
+		return rects;
 	};
 	
 	SpriteCanvasProto.setBg = function(pixelArr) {

@@ -355,6 +355,13 @@ SpriteCanvasViewProto.setSpriteRect = function(sprite, rect) {
 	this.trigger('selectedSpritesChange', this._selectedSprites);
 }
 
+SpriteCanvasViewProto.selectRects = function(rects) {
+	this._unselectAllSprites();
+	this._selectedSprites = rects.map(rect => this._selectSprite(rect, rect));
+	this._attachResizeHandles();
+	this.trigger('selectedSpritesChange', this._selectedSprites);
+}
+
 SpriteCanvasViewProto.setActiveSpriteRect = function(rect) {
 	var sprite = this._selectedSprites[this._selectedSprites.length - 1];
 
