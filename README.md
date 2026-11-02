@@ -28,6 +28,9 @@ Click on a sprite, check the preview and click export. A `.png` file will be dow
 #### Exporting Multiple Sprites
 Click on a sprite, hold shift to select another sprite, and another, and another. Click export. A `.zip` file will be downloaded.
 
+#### Right-click to Export
+Right-click a sprite to select it and export it straight away (hold shift to add it to the selection first). Right-clicking inside the current selection exports the whole selection.
+
 #### Adjusting a Selection
 The last selected sprite gets resize handles: drag them to move its edges. You can also type its position and size in the Properties panel.
 
@@ -37,7 +40,7 @@ The last selected sprite gets resize handles: drag them to move its edges. You c
 - [x] Zoom in/out
 
 ### Ideas
-- [ ] Right-click to export
+- [x] Right-click to export
 - [x] Shift to select multiple sprites and export all
 - [x] Adjustable rectangle after selection
 - [ ] Grid-based slicing

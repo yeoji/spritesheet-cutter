@@ -246,16 +246,18 @@ class SpriteCanvasView extends MicroEvent {
 		$container.appendTo($appendToElm);
 
 		selectArea.bind('select', function (clickedRect) {
-			const rect = Object.assign({}, clickedRect);
+			var spriteRect = spriteCanvasView._findSpriteRect(clickedRect);
 
-			var spriteRect = spriteCanvas.trimBg(rect);
-			if (spriteRect.width && spriteRect.height) { // false if clicked on bg pixel
-				spriteRect = spriteCanvas.expandToSpriteBoundry(rect);
-				
+			if (spriteRect) {
 				spriteCanvasView._handleSelectedSprite(clickedRect, spriteRect);
 			} else {
 				spriteCanvasView._unselectAllSprites();
 			}
+		});
+
+		$container.on('contextmenu', function (event) {
+			event.preventDefault();
+			spriteCanvasView._exportAt(event.pageX, event.pageY);
 		});
 
 		selectColor.bind('select', function (color) {
@@ -285,6 +287,38 @@ class SpriteCanvasView extends MicroEvent {
 }
 
 var SpriteCanvasViewProto = SpriteCanvasView.prototype;
+
+// returns null if the clicked area only has bg pixels
+SpriteCanvasViewProto._findSpriteRect = function(clickedRect) {
+	var spriteCanvas = this._spriteCanvas,
+		rect = Object.assign({}, clickedRect),
+		trimmedRect = spriteCanvas.trimBg(rect);
+
+	if (!trimmedRect.width || !trimmedRect.height) {
+		return null;
+	}
+	return spriteCanvas.expandToSpriteBoundry(rect);
+}
+
+// right-click inside the selection exports it, anywhere else selects the sprite under the mouse first
+SpriteCanvasViewProto._exportAt = function(pageX, pageY) {
+	var point = this.pagePointToCanvas(pageX, pageY),
+		clickedRect = new Rect(point.x, point.y, 1, 1),
+		spriteRect,
+		insideSelection = this._selectedSprites.some(({rect}) =>
+			point.x >= rect.x && point.x < rect.x + rect.width &&
+			point.y >= rect.y && point.y < rect.y + rect.height
+		);
+
+	if (!insideSelection) {
+		spriteRect = this._findSpriteRect(clickedRect);
+		if (!spriteRect) {
+			return;
+		}
+		this._handleSelectedSprite(clickedRect, spriteRect);
+	}
+	this.trigger('exportRequest', this._selectedSprites);
+}
 
 SpriteCanvasViewProto._handleSelectedSprite = function(clickedRect, spriteRect) {
 	if(isKeyDown(SHIFT_KEY)) {

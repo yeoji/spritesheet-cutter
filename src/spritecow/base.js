@@ -123,6 +123,11 @@ import PreviewPanel from '../cutter/PreviewPanel';
 		previewPanel.bind('rectEdit', function(rect) {
 			spriteCanvasView.setActiveSpriteRect(rect);
 		});
+
+		spriteCanvasView.bind('exportRequest', function(selectedSprites) {
+			previewPanel.selectedSprites = selectedSprites;
+			previewPanel.handleExport();
+		});
 		
 		toolbarTop.bind('open-img', function(event) {
 			event.preventDefault();
