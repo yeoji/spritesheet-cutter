@@ -67,6 +67,11 @@ ToolbarProto.addItem = function(toolName, text, opts) {
 	return this;
 };
 
+ToolbarProto.addElement = function($elm) {
+	$elm.insertBefore( this._$feedback );
+	return this;
+};
+
 ToolbarProto.feedback = function(msg, severe) {
 	var $feedback = this._$feedback,
 		initialColor = '#555';

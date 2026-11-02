@@ -1,13 +1,13 @@
 import MicroEvent from './MicroEvent';
 
 export default (function() {
-	function pixelsEquivalent(pixels1, offset1, pixels2, offset2) {
-		if ( pixels1[offset1 + 3] === 0 && pixels2[offset2 + 3] === 0 ) {
-			// if both have alpha zero, they're the same
+	function pixelsEquivalent(pixels1, offset1, pixels2, offset2, tolerance) {
+		if ( pixels1[offset1 + 3] <= tolerance && pixels2[offset2 + 3] <= tolerance ) {
+			// if both are (nearly) transparent, they're the same
 			return true;
 		}
-		// otherwise only true if both pixels have equal RGBA vals
-		for (var i = 4; i--;) if ( pixels1[offset1 + i] !== pixels2[offset2 + i] ) {
+		// otherwise only true if all RGBA vals are within the tolerance
+		for (var i = 4; i--;) if ( Math.abs( pixels1[offset1 + i] - pixels2[offset2 + i] ) > tolerance ) {
 			return false;
 		}
 		return true;
@@ -32,6 +32,8 @@ export default (function() {
 		this.canvas = canvas;
 		this._context = canvas.getContext('2d');
 		this._bgData = [0, 0, 0, 0];
+		// how far each RGBA channel can be from the bg and still count as bg
+		this._tolerance = 10;
 	}
 	
 	var SpriteCanvasProto = SpriteCanvas.prototype = new MicroEvent;
@@ -54,6 +56,14 @@ export default (function() {
 	
 	SpriteCanvasProto.getBg = function() {
 		return this._bgData;
+	};
+
+	SpriteCanvasProto.setTolerance = function(tolerance) {
+		this._tolerance = tolerance;
+	};
+
+	SpriteCanvasProto.getTolerance = function() {
+		return this._tolerance;
 	};
 	
 	SpriteCanvasProto.trimBg = function(rect) {
@@ -135,10 +145,11 @@ export default (function() {
 	};
 	
 	SpriteCanvasProto._pixelsContainOnlyBg = function(pixels) {
-		var bg = this._bgData;
-		
+		var bg = this._bgData,
+			tolerance = this._tolerance;
+
 		for (var i = 0, len = pixels.length; i < len; i += 4) {
-			if ( !pixelsEquivalent(bg, 0, pixels, i) ) {
+			if ( !pixelsEquivalent(bg, 0, pixels, i, tolerance) ) {
 				return false;
 			}
 		}

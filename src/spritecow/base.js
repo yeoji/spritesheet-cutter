@@ -17,7 +17,24 @@ import PreviewPanel from '../cutter/PreviewPanel';
 			}
 			return 'rgba(' + color[0] + ', ' + color[1] + ', ' + color[2] + ', ' + String( color[3] / 255 ).slice(0, 5) + ')';
 		}
-		
+
+		// the tolerance can be edited from the toolbar and the preview panel, keep both in sync
+		function setTolerance(value, source) {
+			var tolerance = parseInt(value, 10);
+
+			if ( !(tolerance >= 0 && tolerance <= 255) ) {
+				return;
+			}
+			spriteCanvas.setTolerance(tolerance);
+
+			if (source !== previewPanel) {
+				previewPanel.setTolerance(tolerance);
+			}
+			if (source !== $toleranceInput) {
+				$toleranceInput.val(tolerance);
+			}
+		}
+
 		var $canvasContainer  = $('.canvas-inner');
 		var $codeContainer    = $('.code-container');
 		var $tutorialLink     = $('.tutorial');
@@ -27,7 +44,9 @@ import PreviewPanel from '../cutter/PreviewPanel';
 		var previewPanel      = new PreviewPanel( spriteCanvas, $codeContainer );
 		var toolbarTop        = new Toolbar('.toolbar-container');
 		var toolbarBottom     = new Toolbar('.toolbar-bottom-container');
-		
+		var $tolerance        = $('<label class="tolerance" title="How different a pixel can be from the background and still count as background">Tolerance <input type="number" min="0" max="255"></label>');
+		var $toleranceInput   = $tolerance.find('input');
+
 		toolbarTop.
 			addItem('open-img', 'Open').
 			addItem('reload-img', 'Reload Current Image', {noLabel: true}).
@@ -36,7 +55,10 @@ import PreviewPanel from '../cutter/PreviewPanel';
 					addItem('select-sprite', 'Select Sprite', {active: true}).
 					addItem('select-bg', 'Pick Background')
 			).
+			addElement($tolerance).
 			addItem('invert-bg', 'Toggle Dark Background', {noLabel: true});
+
+		setTolerance( spriteCanvas.getTolerance() );
 
 		toolbarTop.$container.addClass('top');
 
@@ -65,7 +87,7 @@ import PreviewPanel from '../cutter/PreviewPanel';
 					// if the rect is the same size as the whole canvas,
 					// it's probably because the background is set wrong
 					// let's be kind...
-					toolbarTop.feedback( 'Incorrect background colour set?', true );
+					toolbarTop.feedback( 'Incorrect background colour set? Try a higher tolerance.', true );
 				}
 			});
 		});
@@ -79,6 +101,14 @@ import PreviewPanel from '../cutter/PreviewPanel';
 			spriteCanvasView.setTool(toolName);
 			toolbarTop.activate(toolName);
 			toolbarTop.feedback( 'Background set to ' + colourBytesToCss(color) );
+		});
+
+		$toleranceInput.on('input', function() {
+			setTolerance(this.value, $toleranceInput);
+		});
+
+		previewPanel.bind('toleranceChange', function(value) {
+			setTolerance(value, previewPanel);
 		});
 		
 		toolbarTop.bind('open-img', function(event) {

@@ -2,9 +2,11 @@ import $ from 'jquery';
 import JSZip from 'jszip';
 
 import InlineEdit from '../spritecow/InlineEdit';
+import MicroEvent from '../spritecow/MicroEvent';
 
-class PreviewPanel {
+class PreviewPanel extends MicroEvent {
     constructor(spriteCanvas, $appendTo) {
+        super();
         var $container = $('<div class="preview-panel"></div>').appendTo($appendTo);
         this._$container = $container;
         this.$preview = this.createPreviewComponent().appendTo($container);
@@ -48,6 +50,7 @@ class PreviewPanel {
 
         $('<div class="panel-title">Settings</div>').appendTo(container);
         $('<div>Name: <span id="fileName" data-inline-edit="file-name"/></div><br/>').appendTo(container);
+        $('<div title="How different a pixel can be from the background and still count as background">Tolerance: <input id="tolerance" type="number" min="0" max="255"/></div><br/>').appendTo(container);
         $('<div><span id="selectedSpritesCount">0</span> sprite(s) selected!</div>').appendTo(container);
         $('<div><input id="exportButton" type="button" value="Export" title="Export the selected sprite"></div>').appendTo(container);
         
@@ -73,6 +76,10 @@ class PreviewPanel {
             0, 0, previewCanvas.width, previewCanvas.height
         );
     };
+
+    setTolerance(tolerance) {
+        this.$settings.find('#tolerance').val(tolerance);
+    }
 
     handleExport() {
         if(this.selectedSprites.length > 1) {
@@ -133,6 +140,10 @@ class PreviewPanel {
                 previewPanel.fileName = newVal;
                 previewPanel.update();
             }
+        });
+
+        this.$settings.find('#tolerance').on('input', function() {
+            previewPanel.trigger('toleranceChange', this.value);
         });
     };
 }

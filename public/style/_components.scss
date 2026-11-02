@@ -253,6 +253,10 @@
 			padding: 3px;
 			outline: none;
 		}
+
+		& input[type='number'] {
+			width: 4em;
+		}
 	}
 
 // Toolbar
@@ -336,6 +340,15 @@
 			padding: 5px;
 			color: #555;
 			opacity: 0;
+		}
+		& .tolerance {
+			float: left;
+			margin: 0 5px 5px 0;
+			padding: 3px 0;
+
+			& input {
+				width: 4em;
+			}
 		}
 	}
 

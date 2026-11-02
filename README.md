@@ -16,6 +16,9 @@ Go to `http://localhost:1234`
 #### Background Selection
 Select the background colour of your sprite sheet so that trimming works as expected.
 
+#### Tolerance
+Pixels whose RGBA channels are all within the tolerance of the background colour count as background, and so do nearly transparent pixels. Raise it for sheets with soft glows, anti-aliasing or compression noise around the sprites; set it to `0` for exact matching. It can be edited from the toolbar or the Settings panel.
+
 #### Exporting a Single Sprite
 Click on a sprite, check the preview and click export. A `.png` file will be downloaded.
 
