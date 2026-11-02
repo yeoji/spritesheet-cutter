@@ -14,6 +14,59 @@ export default (function() {
 		return true;
 	};
 	
+	function rectsOverlap(rect1, rect2) {
+		return rect1.x < rect2.x + rect2.width && rect2.x < rect1.x + rect1.width &&
+			rect1.y < rect2.y + rect2.height && rect2.y < rect1.y + rect1.height;
+	}
+
+	// merges rects until none overlap, so loose bits inside a sprite's bounds become part of it
+	function mergeOverlappingRects(rects) {
+		var merged = true;
+
+		while (merged) {
+			merged = false;
+			rects = rects.reduce(function(result, rect) {
+				var overlapping = result.find(function(other) { return rectsOverlap(rect, other); });
+
+				if (overlapping) {
+					var right = Math.max(overlapping.x + overlapping.width, rect.x + rect.width),
+						bottom = Math.max(overlapping.y + overlapping.height, rect.y + rect.height);
+
+					overlapping.x = Math.min(overlapping.x, rect.x);
+					overlapping.y = Math.min(overlapping.y, rect.y);
+					overlapping.width = right - overlapping.x;
+					overlapping.height = bottom - overlapping.y;
+					merged = true;
+				}
+				else {
+					result.push(rect);
+				}
+				return result;
+			}, []);
+		}
+		return rects;
+	}
+
+	// top to bottom, left to right. Rects starting above the bottom of a row's first rect are in that row
+	function sortInReadingOrder(rects) {
+		var rows = [];
+
+		rects.slice().sort(function(a, b) { return a.y - b.y; }).forEach(function(rect) {
+			var row = rows[rows.length - 1];
+
+			if (row && rect.y < row.bottom) {
+				row.rects.push(rect);
+			}
+			else {
+				rows.push({ bottom: rect.y + rect.height, rects: [rect] });
+			}
+		});
+
+		return rows.reduce(function(result, row) {
+			return result.concat( row.rects.sort(function(a, b) { return a.x - b.x; }) );
+		}, []);
+	}
+
 	function allArrayOrTrue(arr1, arr2) {
 		for (var i = arr1.length; i--;) if ( !( arr1[i] || arr2[i] ) ) {
 			return false;
@@ -111,6 +164,54 @@ export default (function() {
 			}
 		}
 		return rects;
+	};
+
+	// finds the bounds of every group of touching sprite pixels (diagonals included)
+	SpriteCanvasProto.findSprites = function() {
+		var width = this.canvas.width,
+			height = this.canvas.height,
+			pixels = this._getPixels(),
+			bg = this._bgData,
+			tolerance = this._tolerance,
+			// 0: bg, 1: sprite pixel, 2: sprite pixel already in a group
+			state = new Uint8Array(width * height),
+			rects = [];
+
+		for (var i = 0; i < state.length; i++) {
+			state[i] = pixelsEquivalent(bg, 0, pixels, i * 4, tolerance) ? 0 : 1;
+		}
+
+		for (var start = 0; start < state.length; start++) {
+			if (state[start] !== 1) { continue; }
+
+			var stack = [start],
+				left = width, top = height, right = 0, bottom = 0;
+
+			state[start] = 2;
+			while (stack.length) {
+				var index = stack.pop(),
+					x = index % width,
+					y = (index - x) / width;
+
+				left = Math.min(left, x);
+				top = Math.min(top, y);
+				right = Math.max(right, x);
+				bottom = Math.max(bottom, y);
+
+				for (var ny = Math.max(y - 1, 0); ny <= Math.min(y + 1, height - 1); ny++) {
+					for (var nx = Math.max(x - 1, 0); nx <= Math.min(x + 1, width - 1); nx++) {
+						var neighbour = ny * width + nx;
+						if (state[neighbour] === 1) {
+							state[neighbour] = 2;
+							stack.push(neighbour);
+						}
+					}
+				}
+			}
+			rects.push( new Rect(left, top, right - left + 1, bottom - top + 1) );
+		}
+
+		return sortInReadingOrder( mergeOverlappingRects(rects) );
 	};
 	
 	SpriteCanvasProto.setBg = function(pixelArr) {

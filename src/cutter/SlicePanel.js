@@ -13,7 +13,10 @@ class SlicePanel extends MicroEvent {
         $('<div>Rows: <input id="gridRows" type="number" min="1" value="1"/></div><br/>').appendTo(this._$container);
         $('<div class="cell-size"></div>').appendTo(this._$container);
         $('<div><label><input id="gridTrim" type="checkbox"/> Trim cells to their sprite</label></div>').appendTo(this._$container);
-        $('<div><input id="gridSliceButton" type="button" value="Slice Grid" title="Select every cell of the grid that has a sprite in it"></div>').appendTo(this._$container);
+        $('<div><input id="gridSliceButton" type="button" value="Slice Grid" title="Select every cell of the grid that has a sprite in it"></div><br/>').appendTo(this._$container);
+        $('<div>' +
+            '<input id="autoSelectButton" type="button" value="Auto Select All" title="Find and select every sprite in the image"> ' +
+            '<input id="exportAllButton" type="button" value="Export All" title="Find every sprite in the image and export them"></div>').appendTo(this._$container);
 
         this._addEvents();
     }
@@ -40,6 +43,8 @@ class SlicePanel extends MicroEvent {
     _addEvents() {
         this._$container.find('#gridColumns, #gridRows').on('input', () => this.update());
         this._$container.find('#gridSliceButton').on('click', () => this.trigger('gridSlice', this.getGrid()));
+        this._$container.find('#autoSelectButton').on('click', () => this.trigger('autoSelect'));
+        this._$container.find('#exportAllButton').on('click', () => this.trigger('exportAll'));
     }
 }
 

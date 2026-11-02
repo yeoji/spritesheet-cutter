@@ -127,11 +127,26 @@ import SlicePanel from '../cutter/SlicePanel';
 			spriteCanvasView.setActiveSpriteRect(rect);
 		});
 
-		slicePanel.bind('gridSlice', function(grid) {
-			var rects = spriteCanvas.getGridRects(grid.columns, grid.rows, grid.trim);
-
+		function selectRects(rects) {
 			spriteCanvasView.selectRects(rects);
 			toolbarTop.feedback( rects.length ? rects.length + ' sprite(s) selected' : 'No sprites found', !rects.length );
+		}
+
+		slicePanel.bind('gridSlice', function(grid) {
+			selectRects( spriteCanvas.getGridRects(grid.columns, grid.rows, grid.trim) );
+		});
+
+		slicePanel.bind('autoSelect', function() {
+			selectRects( spriteCanvas.findSprites() );
+		});
+
+		slicePanel.bind('exportAll', function() {
+			var rects = spriteCanvas.findSprites();
+
+			selectRects(rects);
+			if (rects.length) {
+				previewPanel.handleExport();
+			}
 		});
 
 		spriteCanvasView.bind('exportRequest', function(selectedSprites) {
