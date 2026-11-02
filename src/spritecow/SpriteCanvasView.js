@@ -220,8 +220,9 @@ var SelectArea = (function() {
 	return SelectArea;
 })();
 
-class SpriteCanvasView {
+class SpriteCanvasView extends MicroEvent {
 	constructor(spriteCanvas, $appendToElm) {
+		super();
 		var spriteCanvasView = this,
 			$container = $('<div class="sprite-canvas-container"/>'),
 			$canvas = $( spriteCanvas.canvas ).appendTo( $container ),
@@ -265,7 +266,7 @@ class SpriteCanvasView {
 	}
 }
 
-var SpriteCanvasViewProto = SpriteCanvasView.prototype = new MicroEvent;
+var SpriteCanvasViewProto = SpriteCanvasView.prototype;
 
 SpriteCanvasViewProto._handleSelectedSprite = function(clickedRect, spriteRect) {
 	if(isKeyDown(SHIFT_KEY)) {
