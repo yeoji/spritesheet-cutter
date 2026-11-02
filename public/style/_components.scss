@@ -313,6 +313,17 @@
 				padding: 4px 0;
 				text-indent: -5000px;
 			}
+			&.text-only {
+				padding-left: 10px;
+
+				&::before {
+					display: none;
+				}
+			}
+			&.zoom-reset {
+				min-width: 3em;
+				text-align: center;
+			}
 			&.select-sprite::before {
 				background-position: -4px -2px;
 			}

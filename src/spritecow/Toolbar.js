@@ -49,6 +49,12 @@ class Toolbar extends MicroEvent {
 		if (opts.active) {
 			$button.addClass('active');
 		}
+		if (opts.textOnly) {
+			$button.addClass('text-only');
+		}
+		if (opts.title) {
+			$button.attr('title', opts.title);
+		}
 
 		return $button;
 	}

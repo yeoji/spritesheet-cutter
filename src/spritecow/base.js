@@ -56,7 +56,14 @@ import PreviewPanel from '../cutter/PreviewPanel';
 					addItem('select-bg', 'Pick Background')
 			).
 			addElement($tolerance).
-			addItem('invert-bg', 'Toggle Dark Background', {noLabel: true});
+			addItem('invert-bg', 'Toggle Dark Background', {noLabel: true}).
+			addItem(
+				new ToolbarGroup().
+					addItem('zoom-out', '−', {textOnly: true, title: 'Zoom out (Ctrl + mouse wheel)'}).
+					addItem('zoom-reset', '100%', {textOnly: true, title: 'Actual size'}).
+					addItem('zoom-in', '+', {textOnly: true, title: 'Zoom in (Ctrl + mouse wheel)'})
+			).
+			addItem('zoom-fit', 'Fit', {textOnly: true, title: 'Fit the image in the view'});
 
 		setTolerance( spriteCanvas.getTolerance() );
 
@@ -69,7 +76,9 @@ import PreviewPanel from '../cutter/PreviewPanel';
 		// listeners
 		imgInput.bind('load', function(img) {
 			spriteCanvas.setImg(img);
-			
+			// the canvas size changed, scale it to the current zoom
+			spriteCanvasView.setZoom( spriteCanvasView.getZoom() );
+
 			spriteCanvasView.setTool('select-sprite');
 			pageLayout.toAppView();
 		});
@@ -126,6 +135,30 @@ import PreviewPanel from '../cutter/PreviewPanel';
 		toolbarTop.bind('reload-img', function(event) {
 			imgInput.reloadLastFile();
 			event.preventDefault();
+		});
+
+		toolbarTop.bind('zoom-in', function(event) {
+			spriteCanvasView.zoomIn();
+			event.preventDefault();
+		});
+
+		toolbarTop.bind('zoom-out', function(event) {
+			spriteCanvasView.zoomOut();
+			event.preventDefault();
+		});
+
+		toolbarTop.bind('zoom-reset', function(event) {
+			spriteCanvasView.setZoom(1);
+			event.preventDefault();
+		});
+
+		toolbarTop.bind('zoom-fit', function(event) {
+			spriteCanvasView.zoomToFit();
+			event.preventDefault();
+		});
+
+		spriteCanvasView.bind('zoomChange', function(zoom) {
+			toolbarTop.$container.find('.zoom-reset').text( Math.round(zoom * 100) + '%' );
 		});
 		
 		imgInput.fileClickjackFor( toolbarTop.$container.find('div.open-img') );

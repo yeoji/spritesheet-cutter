@@ -19,6 +19,9 @@ Select the background colour of your sprite sheet so that trimming works as expe
 #### Tolerance
 Pixels whose RGBA channels are all within the tolerance of the background colour count as background, and so do nearly transparent pixels. Raise it for sheets with soft glows, anti-aliasing or compression noise around the sprites; set it to `0` for exact matching. It can be edited from the toolbar or the Settings panel.
 
+#### Zoom
+Use the `−`, `+` and `Fit` toolbar buttons, or hold Ctrl and scroll over the image to zoom around the mouse. Click the percentage to go back to 100%. Selections stay in image pixels at every zoom level.
+
 #### Exporting a Single Sprite
 Click on a sprite, check the preview and click export. A `.png` file will be downloaded.
 
@@ -28,7 +31,7 @@ Click on a sprite, hold shift to select another sprite, and another, and another
 ### Todo
 - [x] Export individual selected sprites as PNG
 - [x] Preview panel for selected sprite
-- [ ] Zoom in/out
+- [x] Zoom in/out
 
 ### Ideas
 - [ ] Right-click to export

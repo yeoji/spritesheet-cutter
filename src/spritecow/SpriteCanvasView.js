@@ -5,20 +5,25 @@ import Rect from './Rect';
 import { SHIFT_KEY, isKeyDown } from '../cutter/KeyboardEvents';
 import SelectedSprite from './extension/SelectedSprite';
 
+var ZOOM_LEVELS = [0.1, 0.25, 0.5, 0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 32];
+
 var Highlight = (function() {
-	function Highlight($appendTo) {
+	function Highlight($appendTo, view) {
 		this._$container = $('<div class="highlight"/>').appendTo( $appendTo );
+		this._view = view;
 	}
-	
+
 	var HighlightProto = Highlight.prototype;
-	
+
+	// rect is in canvas pixels, the highlight is scaled to the current zoom
 	HighlightProto.moveTo = function(rect, animate) {
-		var $container = this._$container.transitionStop(true),
+		var zoom = this._view.getZoom(),
+			$container = this._$container.transitionStop(true),
 			destination = {
-				left: rect.x,
-				top: rect.y,
-				width: rect.width,
-				height: rect.height,
+				left: rect.x * zoom,
+				top: rect.y * zoom,
+				width: rect.width * zoom,
+				height: rect.height * zoom,
 				opacity: 1
 			};
 		
@@ -78,10 +83,10 @@ var Highlight = (function() {
 
 var SelectColor = (function() {
 	
-	function SelectColor($eventArea, $canvas) {
-		this._$canvas = $canvas;
+	function SelectColor($eventArea, $canvas, view) {
 		this._$eventArea = $eventArea;
 		this._context = $canvas[0].getContext('2d');
+		this._view = view;
 		this._listeners = [];
 	}
 	
@@ -125,66 +130,55 @@ var SelectColor = (function() {
 	};
 	
 	SelectColorProto._getColourAtMouse = function(pageX, pageY) {
-		var offset = this._$canvas.offset(),
-			x = pageX - Math.floor(offset.left),
-			y = pageY - Math.floor(offset.top);
-		
-		return this._context.getImageData(x, y, 1, 1).data;
+		var point = this._view.pagePointToCanvas(pageX, pageY);
+
+		return this._context.getImageData(point.x, point.y, 1, 1).data;
 	};
 	
 	return SelectColor;
 })();
 
 var SelectArea = (function() {
-	function SelectArea($eventArea, $area, highlight) {
-		this._$area = $area;
+	function SelectArea($eventArea, highlight, view) {
 		this._$eventArea = $eventArea;
 		this._highlight = highlight;
+		this._view = view;
 		this._listeners = [];
 
 		this.createListeners();
 	}
-	
+
 	var SelectAreaProto = SelectArea.prototype = new MicroEvent;
 
 	SelectAreaProto.createListeners = function() {
 		var selectArea = this,
+			view = selectArea._view,
 			rect = new Rect(0, 0, 0, 0),
-			startX, startY,
-			startPositionX, startPositionY,
+			start,
 			isDragging,
 			$document = $(document);
 
 		selectArea._listeners.push([
 			selectArea._$eventArea, 'mousedown', function(event) {
 				if (event.button !== 0) { return; }
-				var offset = selectArea._$area.offset();
-				startX = event.pageX;
-				startY = event.pageY;
-				// firefox like coming up with fraction values from offset()
-				startPositionX = Math.floor(event.pageX - offset.left);
-				startPositionY = Math.floor(event.pageY - offset.top);
-				
-				rect = new Rect(
-					startPositionX,
-					startPositionY,
-					1, 1
-				);
-				
+				start = view.pagePointToCanvas(event.pageX, event.pageY);
+				rect = new Rect(start.x, start.y, 1, 1);
+
 				selectArea._highlight.moveTo(rect);
 				isDragging = true;
 				event.preventDefault();
 			}
 		]);
-		
+
 		selectArea._listeners.push([
 			$document, 'mousemove', function(event) {
 				if (!isDragging) { return; }
-				
-				rect.x = startPositionX + Math.min(event.pageX - startX, 0);
-				rect.y = startPositionY + Math.min(event.pageY - startY, 0);
-				rect.width = Math.abs(event.pageX - startX) || 1;
-				rect.height = Math.abs(event.pageY - startY) || 1;
+				var point = view.pagePointToCanvas(event.pageX, event.pageY);
+
+				rect.x = Math.min(start.x, point.x);
+				rect.y = Math.min(start.y, point.y);
+				rect.width = Math.abs(point.x - start.x) + 1;
+				rect.height = Math.abs(point.y - start.y) + 1;
 				selectArea._highlight.moveTo(rect);
 			}
 		]);
@@ -227,11 +221,13 @@ class SpriteCanvasView extends MicroEvent {
 			$container = $('<div class="sprite-canvas-container"/>'),
 			$canvas = $( spriteCanvas.canvas ).appendTo( $container ),
 			// this cannot be $appendToElm, as browsers pick up clicks on scrollbars, some don't pick up mouseup http://code.google.com/p/chromium/issues/detail?id=14204#makechanges
-			highlight = new Highlight($container),
-			selectArea = new SelectArea($container, $canvas, highlight),
-			selectColor = new SelectColor($canvas, $canvas),
+			highlight = new Highlight($container, spriteCanvasView),
+			selectArea = new SelectArea($container, highlight, spriteCanvasView),
+			selectColor = new SelectColor($canvas, $canvas, spriteCanvasView),
 			selectedSprites = [];
 
+		this._zoom = 1;
+		this._$canvas = $canvas;
 		this._$container = $container;
 		this._$bgElm = $appendToElm;
 		this._spriteCanvas = spriteCanvas;
@@ -263,6 +259,21 @@ class SpriteCanvasView extends MicroEvent {
 		selectColor.bind('move', function (color) {
 			spriteCanvasView.trigger('bgColorHover', color);
 		});
+
+		// ctrl + wheel (or pinch on a trackpad) zooms around the mouse
+		$appendToElm.on('wheel', function (event) {
+			if (!event.ctrlKey && !event.metaKey) { return; }
+			var offset = $appendToElm.offset(),
+				focusX = event.pageX - offset.left,
+				focusY = event.pageY - offset.top;
+
+			if (event.originalEvent.deltaY < 0) {
+				spriteCanvasView.zoomIn(focusX, focusY);
+			} else {
+				spriteCanvasView.zoomOut(focusX, focusY);
+			}
+			event.preventDefault();
+		});
 	}
 }
 
@@ -286,7 +297,7 @@ SpriteCanvasViewProto._handleSelectedSprite = function(clickedRect, spriteRect) 
 }
 
 SpriteCanvasViewProto._selectSprite = function(clickedRect, spriteRect) {
-	const highlight = new Highlight(this._$container);
+	const highlight = new Highlight(this._$container, this);
 	highlight.moveTo(clickedRect); // move to clicked area so the animation starts from click position
 
 	return new SelectedSprite(spriteRect, highlight);
@@ -325,6 +336,76 @@ SpriteCanvasViewProto.setBg = function(color) {
 	}
 	
 	this._highlight.setHighVisOnDark( color === '#000' );
+};
+
+SpriteCanvasViewProto.getZoom = function() {
+	return this._zoom;
+};
+
+SpriteCanvasViewProto.pagePointToCanvas = function(pageX, pageY) {
+	var offset = this._$canvas.offset(),
+		zoom = this._zoom;
+
+	return {
+		x: Math.floor( (pageX - offset.left) / zoom ),
+		y: Math.floor( (pageY - offset.top) / zoom )
+	};
+};
+
+// focusX/focusY are relative to the visible area (its centre by default),
+// the image point under them stays in place
+SpriteCanvasViewProto.setZoom = function(zoom, focusX, focusY) {
+	var scroller = this._$bgElm[0],
+		canvas = this._spriteCanvas.canvas,
+		oldZoom = this._zoom,
+		imgX, imgY;
+
+	zoom = Math.min( Math.max(zoom, ZOOM_LEVELS[0]), ZOOM_LEVELS[ZOOM_LEVELS.length - 1] );
+
+	if (focusX === undefined) {
+		focusX = scroller.clientWidth / 2;
+		focusY = scroller.clientHeight / 2;
+	}
+	imgX = (scroller.scrollLeft + focusX) / oldZoom;
+	imgY = (scroller.scrollTop + focusY) / oldZoom;
+
+	this._zoom = zoom;
+	this._$canvas.css({
+		width: canvas.width * zoom,
+		height: canvas.height * zoom,
+		// keep pixel art crisp when zoomed in
+		'image-rendering': zoom > 1 ? 'pixelated' : ''
+	});
+	scroller.scrollLeft = imgX * zoom - focusX;
+	scroller.scrollTop = imgY * zoom - focusY;
+
+	this._selectedSprites.forEach(sprite => sprite.highlight.moveTo(sprite.rect));
+	this.trigger('zoomChange', zoom);
+};
+
+SpriteCanvasViewProto.zoomIn = function(focusX, focusY) {
+	var zoom = this._zoom,
+		nextZoom = ZOOM_LEVELS.find(level => level > zoom);
+
+	if (nextZoom) {
+		this.setZoom(nextZoom, focusX, focusY);
+	}
+};
+
+SpriteCanvasViewProto.zoomOut = function(focusX, focusY) {
+	var zoom = this._zoom,
+		prevZoom = ZOOM_LEVELS.filter(level => level < zoom).pop();
+
+	if (prevZoom) {
+		this.setZoom(prevZoom, focusX, focusY);
+	}
+};
+
+SpriteCanvasViewProto.zoomToFit = function() {
+	var scroller = this._$bgElm[0],
+		canvas = this._spriteCanvas.canvas;
+
+	this.setZoom( Math.min(scroller.clientWidth / canvas.width, scroller.clientHeight / canvas.height) );
 };
 
 export default SpriteCanvasView;
