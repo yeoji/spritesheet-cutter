@@ -119,6 +119,10 @@ import PreviewPanel from '../cutter/PreviewPanel';
 		previewPanel.bind('toleranceChange', function(value) {
 			setTolerance(value, previewPanel);
 		});
+
+		previewPanel.bind('rectEdit', function(rect) {
+			spriteCanvasView.setActiveSpriteRect(rect);
+		});
 		
 		toolbarTop.bind('open-img', function(event) {
 			event.preventDefault();

@@ -4,6 +4,7 @@ import MicroEvent from './MicroEvent';
 import Rect from './Rect';
 import { SHIFT_KEY, isKeyDown } from '../cutter/KeyboardEvents';
 import SelectedSprite from './extension/SelectedSprite';
+import ResizeHandles from './extension/ResizeHandles';
 
 var ZOOM_LEVELS = [0.1, 0.25, 0.5, 0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 32];
 
@@ -71,6 +72,11 @@ var Highlight = (function() {
 
 	HighlightProto.remove = function() {
 		this._$container.remove();
+	}
+
+	HighlightProto.append = function($elm) {
+		$elm.appendTo(this._$container);
+		return this;
 	}
 	
 	HighlightProto.setHighVisOnDark = function(highVis) {
@@ -235,6 +241,7 @@ class SpriteCanvasView extends MicroEvent {
 		this._selectArea = selectArea;
 		this._selectColor = selectColor;
 		this._selectedSprites = selectedSprites;
+		this._resizeHandles = new ResizeHandles(spriteCanvasView);
 
 		$container.appendTo($appendToElm);
 
@@ -293,7 +300,33 @@ SpriteCanvasViewProto._handleSelectedSprite = function(clickedRect, spriteRect) 
 		this._selectedSprites = [this._selectSprite(clickedRect, spriteRect)];
 	}
 
+	this._attachResizeHandles();
 	this.trigger('selectedSpritesChange', this._selectedSprites);
+}
+
+// the last selected sprite is the one shown in the preview, so that's the one that can be resized
+SpriteCanvasViewProto._attachResizeHandles = function() {
+	this._resizeHandles.attachTo( this._selectedSprites[this._selectedSprites.length - 1] );
+}
+
+SpriteCanvasViewProto.setSpriteRect = function(sprite, rect) {
+	var canvas = this._spriteCanvas.canvas,
+		left = Math.min( Math.max(rect.x, 0), canvas.width - 1 ),
+		top = Math.min( Math.max(rect.y, 0), canvas.height - 1 ),
+		right = Math.min( Math.max(rect.x + rect.width, left + 1), canvas.width ),
+		bottom = Math.min( Math.max(rect.y + rect.height, top + 1), canvas.height );
+
+	sprite.rect = new Rect(left, top, right - left, bottom - top);
+	sprite.highlight.moveTo(sprite.rect);
+	this.trigger('selectedSpritesChange', this._selectedSprites);
+}
+
+SpriteCanvasViewProto.setActiveSpriteRect = function(rect) {
+	var sprite = this._selectedSprites[this._selectedSprites.length - 1];
+
+	if (sprite) {
+		this.setSpriteRect(sprite, rect);
+	}
 }
 
 SpriteCanvasViewProto._selectSprite = function(clickedRect, spriteRect) {
@@ -306,6 +339,7 @@ SpriteCanvasViewProto._selectSprite = function(clickedRect, spriteRect) {
 SpriteCanvasViewProto._unselectAllSprites = function() {
 	this._selectedSprites.forEach(sprite => sprite.unselect());
 	this._selectedSprites = [];
+	this._resizeHandles.detach();
 }
 
 SpriteCanvasViewProto.setTool = function(mode) {

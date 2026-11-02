@@ -37,10 +37,10 @@ class PreviewPanel extends MicroEvent {
         const container = $('<div></div>');
 
         $('<div class="panel-title">Properties</div>').appendTo(container);
-        $('<div>Top X: <input id="topX" disabled/></div><br/>').appendTo(container);
-        $('<div>Top Y: <input id="topY" disabled/></div><br/>').appendTo(container);
-        $('<div>Width: <input id="width" disabled/></div><br/>').appendTo(container);
-        $('<div>Height: <input id="height" disabled/></div><br/>').appendTo(container);
+        $('<div>Top X: <input id="topX" type="number" min="0"/></div><br/>').appendTo(container);
+        $('<div>Top Y: <input id="topY" type="number" min="0"/></div><br/>').appendTo(container);
+        $('<div>Width: <input id="width" type="number" min="1"/></div><br/>').appendTo(container);
+        $('<div>Height: <input id="height" type="number" min="1"/></div><br/>').appendTo(container);
         
         return container;
     }
@@ -144,6 +144,15 @@ class PreviewPanel extends MicroEvent {
 
         this.$settings.find('#tolerance').on('input', function() {
             previewPanel.trigger('toleranceChange', this.value);
+        });
+
+        this.$properties.on('change', 'input', function() {
+            const value = id => parseInt(previewPanel.$properties.find(id).val(), 10);
+            const rect = {x: value('#topX'), y: value('#topY'), width: value('#width'), height: value('#height')};
+
+            if (Object.values(rect).every(Number.isFinite)) {
+                previewPanel.trigger('rectEdit', rect);
+            }
         });
     };
 }
